@@ -16,11 +16,17 @@
 #include <math.h>
 #include "complex.h"
 
-void disp_complex(t_complex nbr)
+/*----------------------------------------------------------------
+            Afficher un nombre complexe de type t_complex
+----------------------------------------------------------------*/
+void disp_complex(t_complex nbr) // 
 {
     printf("%0.2f + %0.2fi\n",nbr.reel,nbr.im);
 }
 
+/*----------------------------------------------------------------
+        Calcule le module d'un complexe de type t_complex
+----------------------------------------------------------------*/
 void module_complex(t_complex nbr)
 {
     float module;
@@ -30,6 +36,10 @@ void module_complex(t_complex nbr)
     printf("Voici le module : %f\n", module);
 }
 
+
+/*----------------------------------------------------------------
+        additionne deux complexe de type t_complex
+----------------------------------------------------------------*/
 t_complex add_complex(t_complex nbr1, t_complex nbr2)
 {
     t_complex result;
@@ -40,6 +50,9 @@ t_complex add_complex(t_complex nbr1, t_complex nbr2)
     return result;
 }
 
+/*----------------------------------------------------------------
+        multiplie deux complexe de type t_complex
+----------------------------------------------------------------*/
 t_complex multiply_complex(t_complex nbr1, t_complex nbr2)
 {
     t_complex result;
