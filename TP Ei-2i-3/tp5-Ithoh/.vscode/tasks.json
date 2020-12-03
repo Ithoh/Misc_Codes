@@ -1,0 +1,25 @@
+{
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "C/C++: gcc-9 build active file",
+            "command": "gcc",
+            "args": [
+                "-o",
+                "labyrinthe",
+                "affichage.o labyrinthe.o lecture.o move.o expansion.o -lX11 -L/usr/X11R6/lib"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ],
+    "version": "2.0.0"
+}
