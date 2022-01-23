@@ -93,7 +93,7 @@ class Joueur {
     public static final int BLEU = 2;
     String pseudo;
     int couleur;
-    Boolean peutJouer;
+    int nbrPions;
 
     /**
      * @param pseudo  Pseudo du joueur à créer (Chaine de caractères)
@@ -102,6 +102,7 @@ class Joueur {
     Joueur(String pseudo, int couleur) {
         this.pseudo = pseudo;
         this.couleur = couleur;
+        this.nbrPions = 2;
     }
 
     public String toString() {
@@ -309,7 +310,7 @@ class Plateau {
      * 
      * @param p - Joueur devant sélectionner un pion à bouger
      */
-    public void selectionerCase(Joueur p) {
+    public void selectionerCase(Joueur p, Joueur p2) {
         int x;
         int y;
         
@@ -337,7 +338,7 @@ class Plateau {
             out.println(p + " - Postion incorrecte, veuillez re-essayer");
         }
 
-        afficherDeplacementPossible(p,board[x][y], x, y);
+        afficherDeplacementPossible(p, p2, board[x][y], x, y);
 
     }
 
@@ -350,7 +351,7 @@ class Plateau {
      * @param x - Coordonné x de la case sélectionner par le joueur
      * @param y - Coordonné y de la case sélectionner par le joueur
      */
-    public void afficherDeplacementPossible(Joueur p, Case c, int x, int y) {
+    public void afficherDeplacementPossible(Joueur p, Joueur p2, Case c, int x, int y) {
 
         c.setPosition(Case.SELECTIONNER);
 
@@ -378,7 +379,7 @@ class Plateau {
         }
 
         afficherPlateau();
-        deplacerPion(p, x, y);
+        deplacerPion(p, p2, x, y);
     }
 
     /**
@@ -387,7 +388,7 @@ class Plateau {
      * @param x - Coordonné x de la case sélectionner par le joueur
      * @param y - Coordonné y de la case sélectionner par le joueur
      */
-    public void deplacerPion(Joueur p, int x, int y){
+    public void deplacerPion(Joueur p, Joueur p2, int x, int y){
 
         String choix;
         Point element;
@@ -413,6 +414,7 @@ class Plateau {
                         break;
                     } else if (board[x + element.x][y + element.y].getTypeCase() == Case.VIDE) {
                         board[x + element.x][y + element.y].setTypeCase(p.couleur);
+                        p.nbrPions++;
                         break;
                     }
                 }
@@ -424,7 +426,7 @@ class Plateau {
         
         reinitialiserDeplacementsPossible();
         afficherPlateau();
-        infecter(p, x+element.x, y+element.y);
+        infecter(p, p2, x+element.x, y+element.y);
     }
 
     /**
@@ -432,7 +434,7 @@ class Plateau {
      * @param x - Coordonné x du pion déplacé précédemment
      * @param y - Coordonné y du pion déplacé précédemment
      */
-    public void infecter(Joueur p, int x, int y){
+    public void infecter(Joueur p, Joueur p2, int x, int y){
         
         switch (p.couleur) {
             case Joueur.ROUGE:
@@ -443,6 +445,8 @@ class Plateau {
                             // Si un pion bleu y est présent, on le remplace
                             if (board[x+i][y+j].getTypeCase() == Case.BLEU) {
                                 board[x+i][y+j].setTypeCase(Case.ROUGE);
+                                p.nbrPions++;
+                                p2.nbrPions--;
                             }
                         }
                     }
@@ -457,6 +461,8 @@ class Plateau {
                             // Si un pion rouge y est présent, on le remplace
                             if (board[x+i][y+j].getTypeCase() == Case.ROUGE) {
                                 board[x+i][y+j].setTypeCase(Case.BLEU);
+                                p.nbrPions++;
+                                p2.nbrPions--;
                             }
                         }
                     }
@@ -510,6 +516,66 @@ class Plateau {
         return Mouvements;
     }
 
+    /**
+     * Méthode permettant de vérifier si il y a un vainqueur dans la partie
+     * Méthode à appeler après une infection, c'est a dire la fin d'un tour 
+     * de jeu
+     * @param j1 - Joueur 1 de la partie en cours
+     * @param j2 - Joueur 2 de la partie en cours
+     */
+    public void verifierVainqueur(Joueur j1, Joueur j2){
+
+        int nbrCasesVides = 0;
+
+        // On compte le nombre de cases vides restantes sur le plateau
+        // Pour gérer le cas oú toutes les cases sont occupées
+        for (Case[] cases : board) {
+            for (Case pions : cases) {
+                if (pions.getTypeCase() == Case.VIDE) {
+                    nbrCasesVides++;
+                }
+            }
+        }
+
+        switch (nbrCasesVides) {
+            // toutes les cases sont prises, le gagnant est donc celui avec
+            // le plus de pions
+            case 0:
+                // Le joueur 1 à plus de pions
+                if (j1.nbrPions > j2.nbrPions) {
+                    out.println("Victoire de " + j1);
+                    System.exit(0);
+                }
+                // Le joueur 2 à plus de pions
+                else if(j2.nbrPions > j1.nbrPions){
+                    out.println("Victoire de " + j2);
+                    System.exit(0);
+                }
+                // Les deux joueurs ont le même nombre de pions, égalité
+                else if (j1.nbrPions == j2.nbrPions){
+                    out.println("Egalit\u00E9 !");
+                    System.exit(0);
+                }
+            
+            // toutes les cases ne sont pas prises, on regarde donc le nombre
+            // de pions de chaque joueur
+            default:
+                // Le joueur 2 n'a plus de pions, il a perdu, victoire de 
+                // joueur 1
+                if (j2.nbrPions == 0 && j1.nbrPions != 0) {
+                    out.println("Victoire de " + j1);
+                    System.exit(0);
+                }
+                // Le joueur 1 n'a plus de pions, il a perdu, victoire de 
+                // joueur 1
+                else if (j1.nbrPions == 0 && j2.nbrPions != 0){
+                    out.println("Victoire de " + j2);
+                    System.exit(0);
+                }
+
+                break;
+        }
+    }
 
     /**
      * Fonction qui re-initialise les déplacements possible
@@ -556,12 +622,14 @@ class Ataxx {
             switch (joueurCourant.couleur) {
 
                 case Joueur.ROUGE:
-                    board.selectionerCase(joueurCourant);
+                    board.selectionerCase(j1, j2);
+                    board.verifierVainqueur(j1, j2);
                     joueurCourant = j2;
                     break;
             
                 case Joueur.BLEU:
-                    board.selectionerCase(joueurCourant);
+                    board.selectionerCase(j2, j1);
+                    board.verifierVainqueur(j1, j2);
                     joueurCourant = j1;
                     break;
 
