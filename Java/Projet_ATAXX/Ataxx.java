@@ -1,5 +1,5 @@
 import static java.lang.System.out;
-
+import java.util.HashMap;
 import java.util.Scanner;
 
 /**
@@ -71,6 +71,19 @@ enum Couleur {
 }
 
 /**
+ * Classe utilisé pour la génération des déplacements possibles
+ */
+class Point{
+    public int x;
+    public int y;
+
+    Point(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+/**
  * Classe joueur contenant les infos du joueurs
  * 
  */
@@ -96,10 +109,10 @@ class Joueur {
 
         switch (couleur) {
             case ROUGE:
-                c = Couleur.ROUGE_BCK + "[Rouge]" + Couleur.NORMALE_BCK;
+                c = Couleur.ROUGE_BCK + "[" + pseudo + "]" + Couleur.NORMALE_BCK;
                 break;
             case BLEU:
-                c = Couleur.BLEU_BCK + "[Bleu]" + Couleur.NORMALE_BCK;
+                c = Couleur.BLEU_BCK + "[" + pseudo + "]" + Couleur.NORMALE_BCK;
                 break;
             default:
                 c = Couleur.NORMALE_BCK + "[Blanc]" + Couleur.NORMALE_BCK;
@@ -152,6 +165,7 @@ class Case {
 
     /**
      * @return Retourne le type de la case, la fonction retourne un entier
+     * Retour possible : Case.VIDE, Case.ROUGE, Case.BLEU, Case.OBSTACLE
      */
     int getTypeCase(){
         return typeCase;
@@ -159,7 +173,8 @@ class Case {
 
     /**
      * @param position Change la position relative de la case, utiliser pour les
-     * déplacements possible
+     * déplacements possible (NORMAL, SELECTIONNER, IMMEDIAT, DISTANT)
+     * 
      */
     void setPosition(int position){
         this.position = position;
@@ -253,7 +268,7 @@ class Plateau {
     }
 
     /**
-     * Fonction d'intialisation du plateau de jeu, ne retourne rien et n'a pas
+     * Methode d'intialisation du plateau de jeu, ne retourne rien et n'a pas
      * d'arguments
      */
     public void init_plateau() {
@@ -275,7 +290,7 @@ class Plateau {
     }
 
     /**
-     * Fonction d'affichage du plateau de jeu
+     * Methode d'affichage du plateau de jeu
      */
     public void afficherPlateau() {
         out.println();
@@ -289,13 +304,19 @@ class Plateau {
         out.println();
     }
 
-
-    public void selectionerCase(Joueur j) {
+    /**
+     * Methode demandant au joueur de sélectionner à pion à deplacer
+     * 
+     * @param p - Joueur devant sélectionner un pion à bouger
+     */
+    public void selectionerCase(Joueur p) {
         int x;
         int y;
         
+        afficherPlateau();
+
         while (true) {
-            out.println(j + " Saisir une position a jouer (x espace y)");
+            out.println(p + " - Saisir une position a jouer (x espace y)");
             x = clavier.nextInt();
             y = clavier.nextInt();
             clavier.nextLine();
@@ -305,20 +326,31 @@ class Plateau {
                 // ce n'est pas un obstacle
                 if (board[x][y].getTypeCase() != Case.VIDE || 
                     board[x][y].getTypeCase() != Case.OBSTACLE) {
-                    // On vérifie que la couleur est la bonne
-                    if (j.couleur == board[x][y].getTypeCase()) {
+                    // On vérifie que la couleur sélectionner est la bonne
+                    if (p.couleur == board[x][y].getTypeCase()) {
                         break;
                     }
                 }
             }
-            out.println(j + " Postion incorrecte, veuillez re-essayer");
+
+            afficherPlateau();
+            out.println(p + " - Postion incorrecte, veuillez re-essayer");
         }
 
-        afficherDeplacement(board[x][y], x, y);
+        afficherDeplacementPossible(p,board[x][y], x, y);
 
     }
 
-    public void afficherDeplacement(Case c, int x, int y) {
+    /**
+     * Methode affichant les déplacements possibles en fonction de la 
+     * sélection du joueur au précédant
+     * 
+     * @param p - Joueur en cours
+     * @param c - Case sélectionner par le joueur donner par selectionnerCase()
+     * @param x - Coordonné x de la case sélectionner par le joueur
+     * @param y - Coordonné y de la case sélectionner par le joueur
+     */
+    public void afficherDeplacementPossible(Joueur p, Case c, int x, int y) {
 
         c.setPosition(Case.SELECTIONNER);
 
@@ -346,15 +378,148 @@ class Plateau {
         }
 
         afficherPlateau();
+        deplacerPion(p, x, y);
     }
 
-    public static void main(String[] args) {
-        Plateau p = new Plateau();
-        Joueur j = new Joueur("Bob Ross", Joueur.ROUGE);
+    /**
+     * Méthode de saisie du déplacement voulu, et déplacement du pion
+     * @param p - Joueur en cours
+     * @param x - Coordonné x de la case sélectionner par le joueur
+     * @param y - Coordonné y de la case sélectionner par le joueur
+     */
+    public void deplacerPion(Joueur p, int x, int y){
 
-        p.afficherPlateau();
-        p.selectionerCase(j);
+        String choix;
+        Point element;
+        HashMap<String, Point> mouvements = creerMouvements();
 
+        while (true) {
+            out.println(p + " - Saisir un mouvement \u00E0 r\u00E9aliser");
+            choix = clavier.nextLine();
+
+            // On regarde si le mouvement saisis existe
+            if ( (element = mouvements.get(choix) ) != null) {
+                // On vérifie que le mouvement est possible
+                if(element.x + x >= 0 && element.x + x <= 6 &&
+                   element.y + y >= 0 &&  element.y + y <= 6){
+                    // On change la case de destination par la couleur du joueur en cours
+                    // On vérifie le type de mouvement pour déplacer le pion de la bonne
+                    // Manière
+                    if (board[x + element.x][y + element.y].getPosition() == Case.DISTANT &&
+                        board[x + element.x][y + element.y].getTypeCase() == Case.VIDE) {
+                        // Le pion d'origine est supprimé
+                        board[x][y].setTypeCase(Case.VIDE);
+                        board[x + element.x][y + element.y].setTypeCase(p.couleur);
+                        break;
+                    } else if (board[x + element.x][y + element.y].getTypeCase() == Case.VIDE) {
+                        board[x + element.x][y + element.y].setTypeCase(p.couleur);
+                        break;
+                    }
+                }
+            }
+
+            afficherPlateau();
+            out.println(p + " - Mouvement impossible !");
+        }
+        
+        reinitialiserDeplacementsPossible();
+        afficherPlateau();
+        infecter(p, x+element.x, y+element.y);
+    }
+
+    /**
+     * Méthode pour infecter les pions adverse dans un rayon immediat
+     * @param x - Coordonné x du pion déplacé précédemment
+     * @param y - Coordonné y du pion déplacé précédemment
+     */
+    public void infecter(Joueur p, int x, int y){
+        
+        switch (p.couleur) {
+            case Joueur.ROUGE:
+                // Boucle dans le voisinage immediat du pion déplacé
+                for (int i = -1; i < 2; i++) {
+                    for (int j = -1; j < 2; j++) {
+                        if(x+i >= 0 && x+i <= 6 && y+j >= 0 && y+j <= 6){
+                            // Si un pion bleu y est présent, on le remplace
+                            if (board[x+i][y+j].getTypeCase() == Case.BLEU) {
+                                board[x+i][y+j].setTypeCase(Case.ROUGE);
+                            }
+                        }
+                    }
+                }
+                break;
+        
+            case Joueur.BLEU:
+                // Boucle dans le voisinage immediat du pion déplacé
+                for (int i = -1; i < 2; i++) {
+                    for (int j = -1; j < 2; j++) {
+                        if(x+i >= 0 && x+i <= 6 && y+j >= 0 && y+j <= 6){
+                            // Si un pion rouge y est présent, on le remplace
+                            if (board[x+i][y+j].getTypeCase() == Case.ROUGE) {
+                                board[x+i][y+j].setTypeCase(Case.BLEU);
+                            }
+                        }
+                    }
+                }
+                break;
+
+            default:
+                break;
+        }
+        
+        afficherPlateau();
+    }
+
+
+    /**
+     * Methode retournant une table de hash contenant tous les déplacements
+     * possibles
+     */
+    public HashMap<String, Point> creerMouvements(){
+
+        HashMap<String, Point> Mouvements = new HashMap<String, Point>();
+
+        // Mouvements immediats
+        Mouvements.put("1", new Point(1, -1));
+        Mouvements.put("2", new Point(1, 0));
+        Mouvements.put("3", new Point(1, 1));
+        Mouvements.put("4", new Point(0, -1));
+        Mouvements.put("6", new Point(0, 1));
+        Mouvements.put("7", new Point(-1, -1));
+        Mouvements.put("8", new Point(-1, 0));
+        Mouvements.put("9", new Point(-1, 1));
+
+        // Mouvements distants
+        Mouvements.put("51", new Point(2, -2));
+        Mouvements.put("521", new Point(2, -1));
+        Mouvements.put("52", new Point(2, 0));
+        Mouvements.put("523", new Point(2, 1));
+        Mouvements.put("53", new Point(2, 2));
+        Mouvements.put("563", new Point(1, 2));
+        Mouvements.put("56", new Point(0, 2));
+        Mouvements.put("569", new Point(-1, 2));
+        Mouvements.put("59", new Point(-2, 2));
+        Mouvements.put("589", new Point(-2, 1));
+        Mouvements.put("58", new Point(-2, 0));
+        Mouvements.put("587", new Point(-2, -1));
+        Mouvements.put("57", new Point(-2, -2));
+        Mouvements.put("547", new Point(-2, -1));
+        Mouvements.put("54", new Point(0, -2));
+        Mouvements.put("541", new Point(1, -2));
+
+        return Mouvements;
+    }
+
+
+    /**
+     * Fonction qui re-initialise les déplacements possible
+     */
+    public void reinitialiserDeplacementsPossible(){
+        for (Case[] lignes : board) {
+            for (Case element : lignes) {
+                element.setPosition(Case.NORMAL);
+            }
+        }
     }
 
 }
@@ -364,4 +529,51 @@ class Plateau {
  */
 class Ataxx {
 
+    Joueur j1;
+    Joueur j2;
+    Joueur joueurCourant;
+    Plateau board;
+
+    Ataxx(){
+        // On créer le plateau de jeu
+        board = new Plateau();
+        
+        out.println("Veuillez entrz un pseudo pour le joueur 1 (Rouge)");
+        j1 = new Joueur(Plateau.clavier.nextLine(),Joueur.ROUGE);
+        out.println("Veuillez entrz un pseudo pour le joueur 2 (Bleu)");
+        j2 = new Joueur(Plateau.clavier.nextLine(),Joueur.BLEU);
+
+        board.init_plateau();
+
+        // On change le pointeur de joueur courant pour le faire pointer sur j1 
+        // Car lors du début de la partie il s'agit du joueur rouge qui commence
+        joueurCourant = j1;
+    }
+
+    public void lancerPartie(){
+
+        while (true) {
+            switch (joueurCourant.couleur) {
+
+                case Joueur.ROUGE:
+                    board.selectionerCase(joueurCourant);
+                    joueurCourant = j2;
+                    break;
+            
+                case Joueur.BLEU:
+                    board.selectionerCase(joueurCourant);
+                    joueurCourant = j1;
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+    }
+
+    public static void main(String[] args) {
+        Ataxx nouvellePartie = new Ataxx();
+        nouvellePartie.lancerPartie();
+    }
 }
