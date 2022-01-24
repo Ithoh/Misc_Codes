@@ -138,6 +138,7 @@ class Case {
     public static final int SELECTIONNER = 1;
     public static final int IMMEDIAT = 2;
     public static final int DISTANT = 3;
+    public static final int INFECTER = 4;
 
     private int typeCase;
     private int position;
@@ -213,6 +214,20 @@ class Case {
             case DISTANT:
                 crochetG = Couleur.MAGENTA_FOR + "[";
                 crochetD = Couleur.MAGENTA_FOR + "]" + Couleur.NORMALE_FOR;
+                break;
+            case INFECTER:
+                if (getTypeCase() == ROUGE) {
+                    crochetG = Couleur.BLEU_FOR + "[";
+                    crochetD = Couleur.BLEU_FOR + "]" + Couleur.NORMALE_FOR;
+
+                } else if (getTypeCase() == BLEU) {
+                    crochetG = Couleur.ROUGE_FOR + "[";
+                    crochetD = Couleur.ROUGE_FOR + "]" + Couleur.NORMALE_FOR;
+
+                } else{
+                    crochetG = Couleur.NORMALE_FOR + "[";
+                    crochetD = Couleur.NORMALE_FOR + "]" + Couleur.NORMALE_FOR;
+                }
                 break;
             default:
                 crochetG = Couleur.NORMALE_FOR + "[";
@@ -309,17 +324,20 @@ class Plateau {
      * Methode demandant au joueur de sélectionner à pion à deplacer
      * 
      * @param p - Joueur devant sélectionner un pion à bouger
+     * @param p2 - Joueur numéro 2 de la partie en cours
      */
     public void selectionerCase(Joueur p, Joueur p2) {
         int x;
         int y;
-        
+
         afficherPlateau();
 
+        // Tant que la position saisie n'est pas correcte on demande au joueur
+        // de saisir une position
         while (true) {
             out.println(p + " - Saisir une position a jouer (x espace y)");
-            x = clavier.nextInt();
-            y = clavier.nextInt();
+            x = clavier.nextInt() - 1;
+            y = clavier.nextInt() - 1;
             clavier.nextLine();
             // On vérifie qu'on ne se trouve pas en dehors du tableau
             if (x >= 0 && x <= 6 && y >= 0 && y <= 6) {
@@ -334,8 +352,8 @@ class Plateau {
                 }
             }
 
-            afficherPlateau();
-            out.println(p + " - Postion incorrecte, veuillez re-essayer");
+           afficherPlateau();
+           out.println(p + " - Postion saisie incorrecte, veuillez re-essayer");
         }
 
         afficherDeplacementPossible(p, p2, board[x][y], x, y);
@@ -347,15 +365,20 @@ class Plateau {
      * sélection du joueur au précédant
      * 
      * @param p - Joueur en cours
+     * @param p2 - Deuxième joueur de la partie en cours
      * @param c - Case sélectionner par le joueur donner par selectionnerCase()
      * @param x - Coordonné x de la case sélectionner par le joueur
      * @param y - Coordonné y de la case sélectionner par le joueur
      */
     public void afficherDeplacementPossible(Joueur p, Joueur p2, Case c, int x, int y) {
 
+        // On modifie l'attribut Position de la case sélectionner pour
+        // savoir laquelle est sélectionnée
         c.setPosition(Case.SELECTIONNER);
 
         // Boucle pour le déplacement immediat
+        // On change la valeur de l'attribut position pour toutes les cases
+        // dans le voisinage immediat de la case sélectionnée
         for (int i = -1; i < 2; i++) {
             for (int j = -1; j < 2; j++) {
                 if(x+i >= 0 && x+i <= 6 && y+j >= 0 && y+j <= 6){
@@ -367,6 +390,8 @@ class Plateau {
         }
 
         // Boucle pour le déplacement distant
+        // On change la valeur de l'attribut position pour toutes les cases
+        // dans le voisinage distant de la case sélectionnée
         for (int i = -2; i < 3; i++) {
             for (int j = -2; j < 3; j++) {
                 if(x+i >= 0 && x+i <= 6 && y+j >= 0 && y+j <= 6){
@@ -385,6 +410,7 @@ class Plateau {
     /**
      * Méthode de saisie du déplacement voulu, et déplacement du pion
      * @param p - Joueur en cours
+     * @param p2 - Deuxième joueur de la partie en cours
      * @param x - Coordonné x de la case sélectionner par le joueur
      * @param y - Coordonné y de la case sélectionner par le joueur
      */
@@ -392,77 +418,150 @@ class Plateau {
 
         String choix;
         Point element;
+        // On créer la table de hash contenant tout les mouvements possible
+        // d'un pion
         HashMap<String, Point> mouvements = creerMouvements();
 
+        // Tant que le mouvement saise est incorrect on demande au joueur
+        // de saisir un mouvement pour le pion sélectionné
         while (true) {
             out.println(p + " - Saisir un mouvement \u00E0 r\u00E9aliser");
             choix = clavier.nextLine();
 
-            // On regarde si le mouvement saisis existe
+            // On regarde si le mouvement saisis existe, si la chaine de 
+            // de caractère saisie par le joueur n'existe pas dans les 
+            // mouvements possible on demande d'en re-saisir une autre
             if ( (element = mouvements.get(choix) ) != null) {
-                // On vérifie que le mouvement est possible
-                if(element.x + x >= 0 && element.x + x <= 6 &&
-                   element.y + y >= 0 &&  element.y + y <= 6){
-                    // On change la case de destination par la couleur du joueur en cours
-                    // On vérifie le type de mouvement pour déplacer le pion de la bonne
-                    // Manière
-                    if (board[x + element.x][y + element.y].getPosition() == Case.DISTANT &&
-                        board[x + element.x][y + element.y].getTypeCase() == Case.VIDE) {
-                        // Le pion d'origine est supprimé
-                        board[x][y].setTypeCase(Case.VIDE);
-                        board[x + element.x][y + element.y].setTypeCase(p.couleur);
-                        break;
-                    } else if (board[x + element.x][y + element.y].getTypeCase() == Case.VIDE) {
-                        board[x + element.x][y + element.y].setTypeCase(p.couleur);
-                        p.nbrPions++;
-                        break;
+                // On vérifie que le mouvement est possible, donc qu'il ne sort
+                // pas du plateau de jeu
+                if (choix.equals("p")) {
+                    out.println(p + " - Passe son tour");
+                    break;
+                }
+                else{
+                    if(element.x + x >= 0 && element.x + x <= 6 &&
+                    element.y + y >= 0 &&  element.y + y <= 6){
+                        // On change la case de destination par la couleur du joueur en cours
+                        // On vérifie le type de mouvement pour déplacer le pion de la bonne
+                        // Manière
+                        if (board[x + element.x][y + element.y].getPosition() == Case.DISTANT &&
+                            board[x + element.x][y + element.y].getTypeCase() == Case.VIDE) {
+                            // Le pion d'origine est supprimé
+                            board[x][y].setTypeCase(Case.VIDE);
+                            board[x + element.x][y + element.y].setTypeCase(p.couleur);
+                            break;
+                        } else if (board[x + element.x][y + element.y].getTypeCase() == Case.VIDE) {
+                            board[x + element.x][y + element.y].setTypeCase(p.couleur);
+                            p.nbrPions++;
+                            break;
+                        }
                     }
                 }
             }
 
             afficherPlateau();
-            out.println(p + " - Mouvement impossible !");
+            out.println(p + " - Mouvement impossible ! Veuillez re-essayer");
         }
         
         reinitialiserDeplacementsPossible();
         afficherPlateau();
-        infecter(p, p2, x+element.x, y+element.y);
+        try {
+            infecter(p, p2, x+element.x, y+element.y);
+        } catch (Exception e) {
+            out.println("Ceci n'est pas censé arriver");
+        }
     }
 
     /**
      * Méthode pour infecter les pions adverse dans un rayon immediat
+     * @param p - Joueur en cours qui effectue l'infection
+     * @param p2 - Deuxième joueur de la partie qui subit l'infection
      * @param x - Coordonné x du pion déplacé précédemment
      * @param y - Coordonné y du pion déplacé précédemment
      */
-    public void infecter(Joueur p, Joueur p2, int x, int y){
+    public void infecter(Joueur p, Joueur p2, int x, int y) 
+                         throws InterruptedException{
         
+        int nbrInfections = 0;
+        // On effectue un switch case sur le joueur en cours pour determiner sa 
+        // couleur
         switch (p.couleur) {
             case Joueur.ROUGE:
                 // Boucle dans le voisinage immediat du pion déplacé
+                // pour vérifier si il y a des pions bleu présent pour les
+                // infecter
                 for (int i = -1; i < 2; i++) {
                     for (int j = -1; j < 2; j++) {
                         if(x+i >= 0 && x+i <= 6 && y+j >= 0 && y+j <= 6){
-                            // Si un pion bleu y est présent, on le remplace
-                            if (board[x+i][y+j].getTypeCase() == Case.BLEU) {
-                                board[x+i][y+j].setTypeCase(Case.ROUGE);
+                            // Si un pion bleu y est présent, on lui met le 
+                            // status d'infecter
+                            if (board[x+i][y+j].getTypeCase() == Case.BLEU){
+                                board[x+i][y+j].setPosition(Case.INFECTER);
                                 p.nbrPions++;
                                 p2.nbrPions--;
+                                nbrInfections++;
                             }
                         }
                     }
                 }
+                if (nbrInfections == 0) {
+                    break;
+                }
+
+                afficherPlateau();
+                out.println(p + " - Infecte l'adversaire");
+                Thread.sleep(2000);
+
+                for (int i = -1; i < 2; i++) {
+                    for (int j = -1; j < 2; j++) {
+                        if(x+i >= 0 && x+i <= 6 && y+j >= 0 && y+j <= 6){
+                            // Si un pion bleu avec le status infecter est 
+                            // présent on le remplace par un pion rouge
+                            if (board[x+i][y+j].getPosition() == Case.INFECTER){
+                                board[x+i][y+j].setTypeCase(Case.ROUGE);
+                                board[x+i][y+j].setPosition(Case.NORMAL);
+                            }
+                        }
+                    }
+                }
+
                 break;
         
             case Joueur.BLEU:
                 // Boucle dans le voisinage immediat du pion déplacé
+                // pour vérifier si il y a des pions rouge présent pour les
+                // infecter
                 for (int i = -1; i < 2; i++) {
                     for (int j = -1; j < 2; j++) {
                         if(x+i >= 0 && x+i <= 6 && y+j >= 0 && y+j <= 6){
-                            // Si un pion rouge y est présent, on le remplace
+                            // Si un pion a le status infecter on le remplace
+                            // par la couleur adverse
                             if (board[x+i][y+j].getTypeCase() == Case.ROUGE) {
-                                board[x+i][y+j].setTypeCase(Case.BLEU);
+                                board[x+i][y+j].setPosition(Case.INFECTER);
                                 p.nbrPions++;
                                 p2.nbrPions--;
+                                nbrInfections++;
+                            }
+                        }
+                    }
+                }
+
+                if (nbrInfections == 0) {
+                    break;
+                }
+
+                afficherPlateau();
+                out.println(p + " - Infecte l'adversaire");
+                Thread.sleep(2000);
+
+                for (int i = -1; i < 2; i++) {
+                    for (int j = -1; j < 2; j++) {
+                        if(x+i >= 0 && x+i <= 6 && y+j >= 0 && y+j <= 6){
+                            // Si un pion a le status infecter on le remplace
+                            // par la couleur adverse
+                            if (board[x+i][y+j].getPosition() == Case.INFECTER){
+                                board[x+i][y+j].setTypeCase(Case.BLEU);
+                                board[x+i][y+j].setPosition(Case.NORMAL);
                             }
                         }
                     }
@@ -490,6 +589,7 @@ class Plateau {
         Mouvements.put("2", new Point(1, 0));
         Mouvements.put("3", new Point(1, 1));
         Mouvements.put("4", new Point(0, -1));
+        Mouvements.put("p", new Point(0, 0));
         Mouvements.put("6", new Point(0, 1));
         Mouvements.put("7", new Point(-1, -1));
         Mouvements.put("8", new Point(-1, 0));
@@ -604,9 +704,9 @@ class Ataxx {
         // On créer le plateau de jeu
         board = new Plateau();
         
-        out.println("Veuillez entrz un pseudo pour le joueur 1 (Rouge)");
+        out.println("Veuillez entrer un pseudo pour le joueur 1 (Rouge)");
         j1 = new Joueur(Plateau.clavier.nextLine(),Joueur.ROUGE);
-        out.println("Veuillez entrz un pseudo pour le joueur 2 (Bleu)");
+        out.println("Veuillez entrer un pseudo pour le joueur 2 (Bleu)");
         j2 = new Joueur(Plateau.clavier.nextLine(),Joueur.BLEU);
 
         board.init_plateau();
@@ -641,7 +741,7 @@ class Ataxx {
     }
 
     public static void main(String[] args) {
-        Ataxx nouvellePartie = new Ataxx();
-        nouvellePartie.lancerPartie();
+        Ataxx Partie = new Ataxx();
+        Partie.lancerPartie();
     }
 }
