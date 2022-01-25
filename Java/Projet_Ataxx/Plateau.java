@@ -3,12 +3,20 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 /**
- * Classe contenant le plateau de jeu
+ * Classe contenant le plateau de jeu, ainsi que toutes les methodes permettant
+ * des interactions dans le jeu Ataxx entre les pions et les joueurs
+ * @author L\u00E9o Delas
+ * @see Case
+ * @see Couleur
+ * @see Joueur
+ * @see Ataxx
+ * @see Point
  */
 public class Plateau {
     
     private static final int LONGUEUR = 7;
     private static final int LARGEUR = 7;
+    /**Scanner utiliser pour la d\u00E9tection de toutes les frappes au clavier */
     public static Scanner clavier;
     Case[][] board;
 
@@ -30,7 +38,8 @@ public class Plateau {
 
     /**
      * Methode d'intialisation du plateau de jeu, ne retourne rien et n'a pas
-     * d'arguments
+     * d'arguments, la methode est automatiquement appel\u00E9 lors de la 
+     * cr\u00E9ation d'un plateau
      */
     public void init_plateau() {
 
@@ -66,10 +75,10 @@ public class Plateau {
     }
 
     /**
-     * Methode demandant au joueur de sélectionner à pion à deplacer
+     * Methode demandant au joueur de s\u00E9lectionner a pion a deplacer
      * 
-     * @param p Joueur devant sélectionner un pion à bouger
-     * @param p2 Joueur numéro 2 de la partie en cours
+     * @param p Joueur devant s\u00E9lectionner un pion a bouger
+     * @param p2 Joueur num\u00E9ro 2 de la partie en cours
      */
     public void selectionerCase(Joueur p, Joueur p2) {
         int x;
@@ -106,14 +115,14 @@ public class Plateau {
     }
 
     /**
-     * Methode affichant les déplacements possibles en fonction de la 
-     * sélection du joueur au précédant
+     * Methode affichant les d\u00E9placements possibles en fonction de la 
+     * s\u00E9lection du joueur au pr\u00E9c\u00E9dant
      * 
      * @param p Joueur en cours
-     * @param p2 Deuxième joueur de la partie en cours
-     * @param c Case sélectionner par le joueur donner par selectionnerCase()
-     * @param x Coordonné x de la case sélectionner par le joueur
-     * @param y Coordonné y de la case sélectionner par le joueur
+     * @param p2 Deuxieme joueur de la partie en cours
+     * @param c Case s\u00E9lectionner par le joueur donner par selectionnerCase()
+     * @param x Coordonn\u00E9 x de la case s\u00E9lectionner par le joueur
+     * @param y Coordonn\u00E9 y de la case s\u00E9lectionner par le joueur
      */
     public void afficherDeplacementPossible(Joueur p, Joueur p2, Case c, int x, int y) {
 
@@ -153,11 +162,11 @@ public class Plateau {
     }
 
     /**
-     * Méthode de saisie du déplacement voulu, et déplacement du pion
-     * @param p Joueur en cours
-     * @param p2 Deuxième joueur de la partie en cours
-     * @param x Coordonné x de la case sélectionner par le joueur
-     * @param y Coordonné y de la case sélectionner par le joueur
+     * Methode de saisie du d\u00E9placement voulu, et d\u00E9placement du pion
+     * @param p Joueur en cours, dont le pion doit etre deplac\u00E9
+     * @param p2 Deuxieme joueur de la partie en cours
+     * @param x Coordonn\u00E9 x de la case s\u00E9lectionner par le joueur
+     * @param y Coordonn\u00E9 y de la case s\u00E9lectionner par le joueur
      */
     public void deplacerPion(Joueur p, Joueur p2, int x, int y){
 
@@ -195,6 +204,7 @@ public class Plateau {
                             board[x][y].setTypeCase(Case.VIDE);
                             board[x + element.x][y + element.y].setTypeCase(p.couleur);
                             break;
+                          // Le pion d'origine est gardé et on nouveau pion est crée
                         } else if (board[x + element.x][y + element.y].getTypeCase() == Case.VIDE) {
                             board[x + element.x][y + element.y].setTypeCase(p.couleur);
                             p.nbrPions++;
@@ -218,12 +228,12 @@ public class Plateau {
     }
 
     /**
-     * Méthode pour infecter les pions adverse dans un rayon immediat
+     * Methode pour infecter les pions adverse dans un rayon immediat
      * @param p Joueur en cours qui effectue l'infection
-     * @param p2 Deuxième joueur de la partie qui subit l'infection
-     * @param x Coordonné x du pion déplacé précédemment
-     * @param y Coordonné y du pion déplacé précédemment
-     * @throws InterruptedException - Retourne une exception si le Thread.sleep()
+     * @param p2 Deuxieme joueur de la partie qui subit l'infection
+     * @param x Coordonn\u00E9 x du pion d\u00E9plac\u00E9 pr\u00E9c\u00E9demment
+     * @param y Coordonn\u00E9 y du pion d\u00E9plac\u00E9 pr\u00E9c\u00E9demment
+     * @throws InterruptedException Retourne une exception si le Thread.sleep()
      * rate
      */
     public void infecter(Joueur p, Joueur p2, int x, int y) 
@@ -324,12 +334,14 @@ public class Plateau {
 
 
     /**
-     * Methode retournant une table de hash contenant tous les déplacements
+     * Methode retournant une table de hash contenant tous les d\u00E9placements
      * possibles
      * @return - La m\u00E9tode retourne une table de hash contenant tous 
-     * les d\u00E9placements possible, ainsi qu'un objet point ayant pour
-     * attribut x et y les coordonn\u00E9es pour le d\u00E9placement sur
-     * le plateau de jeu
+     * les d\u00E9placements possible, qui sont indentifi\u00E9 par une chaine
+     * de caracteres , ainsi qu'un objet point ayant pour attribut x et y 
+     * les coordonn\u00E9es pour le d\u00E9placement sur le plateau de jeu
+     * <br>
+     * <img src="./resources/hash_map.png" alt="Image de la table de mouvements">
      */
     public HashMap<String, Point> creerMouvements(){
 
@@ -368,8 +380,8 @@ public class Plateau {
     }
 
     /**
-     * Méthode permettant de vérifier si il y a un vainqueur dans la partie
-     * Méthode à appeler après une infection, c'est a dire la fin d'un tour 
+     * M\u00E9thode permettant de v\u00E9rifier si il y a un vainqueur dans la partie
+     * M\u00E9thode a appeler apres une infection, c'est a dire la fin d'un tour 
      * de jeu
      * @param j1 Joueur 1 de la partie en cours
      * @param j2 Joueur 2 de la partie en cours
@@ -429,7 +441,8 @@ public class Plateau {
     }
 
     /**
-     * Fonction qui re-initialise les déplacements possible
+     * Fonction qui re-initialise les d\u00E9placements possible sur le plateau pour
+     * l'affichage
      */
     public void reinitialiserDeplacementsPossible(){
         for (Case[] lignes : board) {

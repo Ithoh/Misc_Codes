@@ -1,5 +1,11 @@
 /**
  * Classe enum\u00E9r\u00E9 contenant les couleurs pour colorer le terminal
+ * @author L\u00E9o Delas
+ * @see Case
+ * @see Joueur
+ * @see Ataxx
+ * @see Plateau
+ * @see Point
  */
 public enum Couleur {
     // FOR : foreground (couleur des caractères).

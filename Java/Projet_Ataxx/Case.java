@@ -1,17 +1,32 @@
 /**
  * Classe d\u00E9finissant chaque case du plateau de jeu
+ * @author L\u00E9o Delas
+ * @see Couleur
+ * @see Joueur
+ * @see Ataxx
+ * @see Plateau
+ * @see Point
  */
 public class Case {
 
+    /** Variable concernant le type de la case, et son contenu */
     public static final int VIDE = 0;
+    /** Variable concernant le type de la case, et son contenu */
     public static final int ROUGE = 1;
+    /** Variable concernant le type de la case, et son contenu */
     public static final int BLEU = 2;
+    /** Variable concernant le type de la case, et son contenu */
     public static final int OBSTACLE = 3;
 
+    /** Variable concernant l'etat de la case */
     public static final int NORMAL = 0;
+    /** Variable concernant l'etat de la case */
     public static final int SELECTIONNER = 1;
+    /** Variable concernant l'etat de la case */
     public static final int IMMEDIAT = 2;
+    /** Variable concernant l'etat de la case */
     public static final int DISTANT = 3;
+    /** Variable concernant l'etat de la case */
     public static final int INFECTER = 4;
 
     private int typeCase;
@@ -33,36 +48,46 @@ public class Case {
    } 
 
     /**
+     * Permet de changer le type de la case voulut
      * @param typeCase Type de case à changer (VIDE, ROUGE, BLEU, OBSTACLE)
      */
-    void setTypeCase(int typeCase) {
+    public void setTypeCase(int typeCase) {
         this.typeCase = typeCase;
     }
 
     /**
+     * Retourne le type de la case
      * @return Retourne le type de la case, la fonction retourne un entier
      * Retour possible : Case.VIDE, Case.ROUGE, Case.BLEU, Case.OBSTACLE
      */
-    int getTypeCase(){
+    public int getTypeCase(){
         return typeCase;
     }
 
     /**
+     * Permet de changer l'etat de la case
      * @param position Change la position relative de la case, utiliser pour les
      * déplacements possible (NORMAL, SELECTIONNER, IMMEDIAT, DISTANT)
      * 
      */
-    void setPosition(int position){
+    public void setPosition(int position){
         this.position = position;
     }
     /**
+     * Retourne l'etat de la case
      * @return Retourne un entier correspondant a la position relative de la
      * case sélectionner
      */
-    int getPosition(){
+    public int getPosition(){
         return position;
     }
 
+    /** 
+     * Methode d'affichage d'une case, la couleur du pion ainsi que les crochets
+     * l'entourant sont gerer selon les valeurs propres a la case, c'est a dire
+     * le typeCase et position
+     * @return Retourne une chaine de caracteres
+    */
     public String toString() {
 
         String crochetG;

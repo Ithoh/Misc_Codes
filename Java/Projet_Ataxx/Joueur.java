@@ -1,10 +1,17 @@
 /**
- * Classe joueur contenant les infos du joueurs
- * 
+ * Classe joueur contenant les infos du joueurs, son pseudo et sa couleur
+ * @author L\u00E9o Delas
+ * @see Case
+ * @see Couleur
+ * @see Ataxx
+ * @see Plateau
+ * @see Point
  */
 public class Joueur {
 
+    /** Entier ayant pour valeur 1, permet de definir la couleur du joueur */
     public static final int ROUGE = 1;
+    /** Entier ayant pour valeur 2, permet de definir la couleur du joueur */
     public static final int BLEU = 2;
     String pseudo;
     int couleur;
@@ -20,6 +27,10 @@ public class Joueur {
         this.nbrPions = 2;
     }
 
+    /** 
+     * Fonction d'affichage d'un joueur, affiche son pseudo avec comme couleur
+     * de fond sa couleur
+    */
     public String toString() {
         String c;
 
