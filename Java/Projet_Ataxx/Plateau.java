@@ -81,18 +81,30 @@ public class Plateau {
      * @param p2 Joueur num\u00E9ro 2 de la partie en cours
      */
     public void selectionerCase(Joueur p, Joueur p2) {
-        int x;
-        int y;
+        int x=0;
+        int y=0;
+        int tempInt;
 
         afficherPlateau();
 
         // Tant que la position saisie n'est pas correcte on demande au joueur
         // de saisir une position
         while (true) {
-            out.println(p + " - Saisir une position a jouer (x espace y)");
-            x = clavier.nextInt() - 1;
-            y = clavier.nextInt() - 1;
-            clavier.nextLine();
+            
+            while (true) {
+                out.println(p + " - Saisir une position a jouer (xy)");
+                while (!clavier.hasNextInt()) {
+                    out.println(p + " - Position saisie incorrecte, veuillez re-essayer");
+                    clavier.next();
+                }
+                tempInt = clavier.nextInt();
+                clavier.nextLine();
+                break;
+            }
+            x = (tempInt/10)-1;
+            y = (tempInt%10)-1;
+            
+
             // On vérifie qu'on ne se trouve pas en dehors du tableau
             if (x >= 0 && x <= 6 && y >= 0 && y <= 6) {
                 // On vérifie que la case sélectionner contient un pion et que
@@ -126,32 +138,32 @@ public class Plateau {
      */
     public void afficherDeplacementPossible(Joueur p, Joueur p2, Case c, int x, int y) {
 
-        // On modifie l'attribut Position de la case sélectionner pour
+        // On modifie l'attribut etat de la case sélectionner pour
         // savoir laquelle est sélectionnée
-        c.setPosition(Case.SELECTIONNER);
+        c.setEtat(Case.SELECTIONNER);
 
         // Boucle pour le déplacement immediat
-        // On change la valeur de l'attribut position pour toutes les cases
+        // On change la valeur de l'attribut Etat pour toutes les cases
         // dans le voisinage immediat de la case sélectionnée
         for (int i = -1; i < 2; i++) {
             for (int j = -1; j < 2; j++) {
                 if(x+i >= 0 && x+i <= 6 && y+j >= 0 && y+j <= 6){
                     if (board[x+i][y+j].getTypeCase() == Case.VIDE) {
-                        board[x+i][y+j].setPosition(Case.IMMEDIAT);
+                        board[x+i][y+j].setEtat(Case.IMMEDIAT);
                     }
                 }
             }
         }
 
         // Boucle pour le déplacement distant
-        // On change la valeur de l'attribut position pour toutes les cases
+        // On change la valeur de l'attribut Etat pour toutes les cases
         // dans le voisinage distant de la case sélectionnée
         for (int i = -2; i < 3; i++) {
             for (int j = -2; j < 3; j++) {
                 if(x+i >= 0 && x+i <= 6 && y+j >= 0 && y+j <= 6){
                     if (board[x+i][y+j].getTypeCase() == Case.VIDE && 
-                        board[x+i][y+j].getPosition() != Case.IMMEDIAT) {
-                            board[x+i][y+j].setPosition(Case.DISTANT);
+                        board[x+i][y+j].getEtat() != Case.IMMEDIAT) {
+                            board[x+i][y+j].setEtat(Case.DISTANT);
                     }
                 }
             }
@@ -198,7 +210,7 @@ public class Plateau {
                         // On change la case de destination par la couleur du joueur en cours
                         // On vérifie le type de mouvement pour déplacer le pion de la bonne
                         // Manière
-                        if (board[x + element.x][y + element.y].getPosition() == Case.DISTANT &&
+                        if (board[x + element.x][y + element.y].getEtat() == Case.DISTANT &&
                             board[x + element.x][y + element.y].getTypeCase() == Case.VIDE) {
                             // Le pion d'origine est supprimé
                             board[x][y].setTypeCase(Case.VIDE);
@@ -253,7 +265,7 @@ public class Plateau {
                             // Si un pion bleu y est présent, on lui met le 
                             // status d'infecter
                             if (board[x+i][y+j].getTypeCase() == Case.BLEU){
-                                board[x+i][y+j].setPosition(Case.INFECTER);
+                                board[x+i][y+j].setEtat(Case.INFECTER);
                                 p.nbrPions++;
                                 p2.nbrPions--;
                                 nbrInfections++;
@@ -274,9 +286,9 @@ public class Plateau {
                         if(x+i >= 0 && x+i <= 6 && y+j >= 0 && y+j <= 6){
                             // Si un pion bleu avec le status infecter est 
                             // présent on le remplace par un pion rouge
-                            if (board[x+i][y+j].getPosition() == Case.INFECTER){
+                            if (board[x+i][y+j].getEtat() == Case.INFECTER){
                                 board[x+i][y+j].setTypeCase(Case.ROUGE);
-                                board[x+i][y+j].setPosition(Case.NORMAL);
+                                board[x+i][y+j].setEtat(Case.NORMAL);
                             }
                         }
                     }
@@ -294,7 +306,7 @@ public class Plateau {
                             // Si un pion a le status infecter on le remplace
                             // par la couleur adverse
                             if (board[x+i][y+j].getTypeCase() == Case.ROUGE) {
-                                board[x+i][y+j].setPosition(Case.INFECTER);
+                                board[x+i][y+j].setEtat(Case.INFECTER);
                                 p.nbrPions++;
                                 p2.nbrPions--;
                                 nbrInfections++;
@@ -316,9 +328,9 @@ public class Plateau {
                         if(x+i >= 0 && x+i <= 6 && y+j >= 0 && y+j <= 6){
                             // Si un pion a le status infecter on le remplace
                             // par la couleur adverse
-                            if (board[x+i][y+j].getPosition() == Case.INFECTER){
+                            if (board[x+i][y+j].getEtat() == Case.INFECTER){
                                 board[x+i][y+j].setTypeCase(Case.BLEU);
-                                board[x+i][y+j].setPosition(Case.NORMAL);
+                                board[x+i][y+j].setEtat(Case.NORMAL);
                             }
                         }
                     }
@@ -447,7 +459,7 @@ public class Plateau {
     public void reinitialiserDeplacementsPossible(){
         for (Case[] lignes : board) {
             for (Case element : lignes) {
-                element.setPosition(Case.NORMAL);
+                element.setEtat(Case.NORMAL);
             }
         }
     }

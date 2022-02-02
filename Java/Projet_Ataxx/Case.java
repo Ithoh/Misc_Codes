@@ -30,7 +30,7 @@ public class Case {
     public static final int INFECTER = 4;
 
     private int typeCase;
-    private int position;
+    private int etat;
 
     /**
      * Constructeur de la classe case, contstruit une case vide
@@ -39,12 +39,12 @@ public class Case {
      */
     Case(){
         typeCase = VIDE;
-        position = NORMAL;
+        etat = NORMAL;
     }
 
    Case(int typeCase){
         this.typeCase = typeCase;
-        position = NORMAL;
+        etat = NORMAL;
    } 
 
     /**
@@ -66,26 +66,26 @@ public class Case {
 
     /**
      * Permet de changer l'etat de la case
-     * @param position Change la position relative de la case, utiliser pour les
+     * @param etat Change l'etat relatif de la case, utiliser pour les
      * déplacements possible (NORMAL, SELECTIONNER, IMMEDIAT, DISTANT)
      * 
      */
-    public void setPosition(int position){
-        this.position = position;
+    public void setEtat(int etat){
+        this.etat = etat;
     }
     /**
      * Retourne l'etat de la case
-     * @return Retourne un entier correspondant a la position relative de la
+     * @return Retourne un entier correspondant a la etat relative de la
      * case sélectionner
      */
-    public int getPosition(){
-        return position;
+    public int getEtat(){
+        return etat;
     }
 
     /** 
      * Methode d'affichage d'une case, la couleur du pion ainsi que les crochets
      * l'entourant sont gerer selon les valeurs propres a la case, c'est a dire
-     * le typeCase et position
+     * le typeCase et etat
      * @return Retourne une chaine de caracteres
     */
     public String toString() {
@@ -94,7 +94,7 @@ public class Case {
         String crochetD;
         String element;
 
-        switch (position) {
+        switch (etat) {
             case NORMAL:
                 crochetG = Couleur.NORMALE_FOR + "[";
                 crochetD = Couleur.NORMALE_FOR + "]" + Couleur.NORMALE_FOR;
